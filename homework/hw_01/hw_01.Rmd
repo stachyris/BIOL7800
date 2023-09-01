@@ -1,30 +1,39 @@
 ---
 title: "hw_01.Rmd"
 author: "Vinay K L"
-date: "2023-08-31"
-output: pdf_document
+date: "2023-09-01"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## Introduction
+Hi There! My name is _Vinay KL_ and I am a first year PhD student at the [Faircloth Lab](https://www.faircloth-lab.org) at the Department of Biological Sciences at Louisiana State University. 
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
+### Hobbies
+
+I have always enjoyed being outdoor and loved watching **BIRDS**. Interestingly, I also have liking towards collecting stamps, coins and currency notess. 
+
+
+-------------------------------------
+
+Let's try and look at some code chunks and see if we can print some
+
+```{bash}
+git --version
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{bash}
+r --version
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+-----------------------------------------
+
+That's it for this document. See you at next one!
