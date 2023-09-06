@@ -13,18 +13,18 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-## Introduction
-Hi There! My name is _Vinay KL_ and I am a first year PhD student at the [Faircloth Lab](https://www.faircloth-lab.org) at the Department of Biological Sciences at Louisiana State University. 
+# Introduction
+Hi there! My name is _Vinay KL_ and I am a first year PhD student at the [Faircloth Lab](https://www.faircloth-lab.org) at the Department of Biological Sciences, Louisiana State University. 
 
 
-### Hobbies
+## Hobbies
 
-I have always enjoyed being outdoor and loved watching **BIRDS**. Interestingly, I also have liking towards collecting stamps, coins and currency notess. 
+I have always enjoyed being outdoor and loved watching **BIRDS**. Interestingly, I also have liking towards collecting stamps, coins and currency notes. 
 
 
 -------------------------------------
 
-Let's try and look at some code chunks and see if we can print some
+Let's try and look at some code chunks and output some bash commands
 
 ```{bash}
 git --version
@@ -36,4 +36,4 @@ r --version
 
 -----------------------------------------
 
-That's it for this document. See you at next one!
+That's it for this time. See you at next one!
