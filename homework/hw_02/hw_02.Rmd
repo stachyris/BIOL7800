@@ -1,0 +1,14 @@
+---
+title: "hw_02"
+author: "Vinay K L"
+date: "2023-09-10"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
