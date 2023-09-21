@@ -3,27 +3,82 @@ title: "hw_02"
 author: "Vinay K L"
 date: "2023-09-10"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-```{r Q1}
+## Q1 a)
+```{r}
 mtcars[mtcars$cyl < 6, ]
 ```
 
-```{r Q2}
+## Q1 b)
+```{r}
 mtcars[-(1:3),]
 ```
 
-```{r Q3}
+## Q1 c)
+```{r}
 mtcars[mtcars$cyl == 8, ]
 ```
 
-```{r Q4}
+## Q1 d)
+```{r} 
 mtcars[mtcars$cyl == 4 | mtcars$cyl == 6, ]
+```
+
+
+## Q2 
+
+When we execute x[NA], it returns five missing values because there are no elements in x that satisfy the condition of being missing.
+
+
+## Q3 mtcars[1:15]
+
+Above line of code returns an error as we are not specifying the row. Syntax should be x[1,1]
+mtcars[1:5,] is different than mtcars[1:5] as we are specifying both row and column. 
+
+
+## Q4
+```{r }
+x = matrix(c(1:3, NA, 5:7, NA, NA), nrow = 3)
+#Here we are creating a matrix of three rows with nultiple values and three of the cells 
+# contains "NA" as values. 
+x
+
+x[is.na(x)] = 0
+# is.na(x) is a logical matrix which looks for a missing values and returns TRUE or FALSE. x[is.na(x)] 
+# replaces all those NA to "0". 
+x
+```
+
+## Q5
+
+```{r}
+#loading the dataframe
+data("mtcars")
+
+#checking the dataframe
+head(mtcars)
+
+#now we need to add another column for the dataframe which has a 
+#different category of milage for each car model. 
+#For that we will make use of ifelse function to first to segregate the data into 4 type. 
+
+milage_cat <- ifelse(mtcars$mpg < 16.0, "Low",
+                     ifelse(mtcars$mpg < 21.0, "Low_intermediate",
+                            ifelse(mtcars$mpg < 26.0, "Intermidate_High",  "High" )))
+
+#checking the new column data
+head(milage_cat, n=10)
+
+#adding the data to datafrane as a new column at the end
+mtcars$mpg_2 <- milage_cat
+
+#checking the dataframe to ensure the column  and category makes sense
+head(mtcars, n=32)
 ```
