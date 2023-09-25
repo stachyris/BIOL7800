@@ -3,8 +3,8 @@ title: "hw_02"
 author: "Vinay K L"
 date: "2023-09-10"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -70,8 +70,8 @@ head(mtcars)
 #For that we will make use of ifelse function to first to segregate the data into 4 type. 
 
 milage_cat <- ifelse(mtcars$mpg < 16.0, "Low",
-                     ifelse(mtcars$mpg < 21.0, "Low_intermediate",
-                            ifelse(mtcars$mpg < 26.0, "Intermidate_High",  "High" )))
+                     ifelse(mtcars$mpg >= 16.0 & mtcars$mpg < 21.0, "Low_intermediate",
+                            ifelse(mtcars$mpg >= 21.0 & mtcars$mpg < 26.0, "Intermidate_High",  "High" )))
 
 #checking the new column data
 head(milage_cat, n=10)

@@ -498,8 +498,8 @@ head(mtcars)</code></pre>
 #For that we will make use of ifelse function to first to segregate the data into 4 type. 
 
 milage_cat &lt;- ifelse(mtcars$mpg &lt; 16.0, &quot;Low&quot;,
-                     ifelse(mtcars$mpg &lt; 21.0, &quot;Low_intermediate&quot;,
-                            ifelse(mtcars$mpg &lt; 26.0, &quot;Intermidate_High&quot;,  &quot;High&quot; )))
+                     ifelse(mtcars$mpg &gt;= 16.0 &amp; mtcars$mpg &lt; 21.0, &quot;Low_intermediate&quot;,
+                            ifelse(mtcars$mpg &gt;= 21.0 &amp; mtcars$mpg &lt; 26.0, &quot;Intermidate_High&quot;,  &quot;High&quot; )))
 
 #checking the new column data
 head(milage_cat, n=10)</code></pre>
