@@ -1,7 +1,7 @@
 ---
 title: "hw_02"
 author: "Vinay K L"
-date: "2023-09-10"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   pdf_document: default
   html_document: default
