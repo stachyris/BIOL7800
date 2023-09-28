@@ -1,6 +1,4 @@
 ---
-title: "proposal.Rmd"
-author: "Vinay K L"
 date: "2023-09-28"
 output:
   pdf_document: default
@@ -16,9 +14,16 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r, include=FALSE}
+knitr::write_bib(file = 'packages.bib')
+```
+
 # Where the gaps are? Analysing Vertnet database to find the global gaps in avian specimen collections.
 
+\begin{center}
 Vinay K L
+\end{center}
+
 
 Museum and Natural history collections are important, essential and
 invaluable source of earth history's biodiversity information. The
@@ -32,5 +37,7 @@ Some background Use of specimens - maybe Edawards paper Kevin Winker
 paper Some background about Vertnet Disparity between global south
 collection perhaps Usefulness of the analysis
 
+
+## References
 
  
