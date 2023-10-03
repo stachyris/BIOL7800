@@ -5,6 +5,7 @@ output:
   html_document: default
 link-citations: yes
 bibliography: references_proposal.bib
+indent: true
 editor_options:
   markdown:
     wrap: 72
