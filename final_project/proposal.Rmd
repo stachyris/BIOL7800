@@ -71,5 +71,16 @@ database can be downloaded from [here.](http://dx.doi.org/10.7946/P2K01C)
 
 ## Questions
 
+VertNet has developed and deployed couple of their own pipeline and packages for data manipulation. 
+
+1) Where are the major data gaps in terms of specimen collection and tissue sample?
+2) Which are the over and under represented groups/family of birds?
+3) Are the global south under-represented in the museum collection?
+4) Is the long-term trends in specimen accumulation increasing or decreasing?
+
+ 
+## Caveats
+ 
+Although VertNet is a good source of database it is not updated since 2016. 
 
 ## References
