@@ -1,5 +1,5 @@
 ---
-date: "2023-09-28"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   html_document: default
   pdf_document: default
