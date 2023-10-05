@@ -2,10 +2,50 @@
 title: "hw_03.Rmd"
 author: "Vinay K L"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+## Q1
+
+Suppose we have a dataset A (see code below) where each column represents multiple measures of nitrogen concentration in a particular lake. We want to get the average value for each lake. Do this in two ways: a for loop and a vectorized function colMeans().
+
+set.seed(12) # to be reproducible
+A = matrix(data = runif(n = 1:500), nrow = 50, ncol = 10)
+colnames(A) = paste("lake", 1:10, sep = "_")
+
+## Solution
+
+```{r}
+set.seed(12) # to be reproducible
+A = matrix(data = runif(n = 1:500), nrow = 50, ncol = 10)
+colnames(A) = paste("lake", 1:10, sep = "_")
+```
+
+Using for loop
+
+```{r}
+num_lakes <- ncol(A)
+average_values1 <- numeric(num_lakes)
+
+for (i in 1:num_lakes) {
+  average_values1[i] <- mean(A[, i])
+}
+
+print(average_values1)
+```
+
+Using colMeans()
+
+```{r}
+average_values2 <- colMeans(A)
+
+print(average_values2)
+```
+
 
