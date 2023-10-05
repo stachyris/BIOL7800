@@ -49,3 +49,24 @@ print(average_values2)
 ```
 
 
+## Q2 
+From the for loop lecture, we see the following example of using apply():
+
+x = array(1:27, dim = c(3, 3, 3))
+apply(X = x, MARGIN = c(1, 2), 
+      FUN = paste, collapse = ", ")
+      
+Now, use for loops to get the same task done (hint: nested loops). The results should be the same.
+
+## Solution
+
+```{r}
+# checking what's the results are first.
+x = array(1:27, dim = c(3, 3, 3))
+apply(X = x, MARGIN = c(1, 2), 
+      FUN = paste, collapse = ", ")
+```
+
+
+
+
