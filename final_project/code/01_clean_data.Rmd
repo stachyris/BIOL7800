@@ -194,7 +194,6 @@ cleaned_df$country <- sapply(cleaned_df$country, replace_names_ANTD)
 ```{r warning=FALSE}
 # coming back to this and trying again to see how things go this time
 
-# Assuming your dataset is named 'my_data' and the column with country names is 'country'
 cleaned_df$StandardName <- countrycode(cleaned_df$country, origin = "country.name", destination = "iso3c")
 
 #now let's get a sense of rows which didn't have any hits
