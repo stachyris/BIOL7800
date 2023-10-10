@@ -1,0 +1,279 @@
+---
+title: "01_clean_data.Rmd"
+author: "Vinay K L"
+date: "2023-10-07"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo = F}
+library(knitr)
+opts_chunk$set(tidy.opts=list(width.cutoff=80),tidy=TRUE)
+```
+
+```{r loading libraries, include=FALSE}
+library(rvertnet)
+library(tidyverse)
+library(rgdal)
+library(dplyr)
+library(lubridate)
+library(countrycode)
+library(stringr)
+library(fuzzyjoin)
+library(readr)
+```
+
+## get the data2 using rvetnet
+
+```{r datascraping, include=FALSE}
+bigsearch(class = "aves", rfile = "aves_vertnet_records", email = "vkl1@lsu.edu") 
+```
+
+## Loading the datasets
+```{r dataset 1}
+data1 <- read.csv("../data/vertnet_latest_birds.csv", sep = "," , header = TRUE)
+```
+
+```{r dataset 2, warning=FALSE}
+data2 <- read.csv("../data/aves_vertnet_records-43452c1446904be6ba9641c86f891234.tsv", sep = "\t", header = TRUE)
+```
+
+```{r}
+# There seems to be some kind of disordinance with the rvertnet bigsearch - third request produced larger dataset - let's try and see how it pans out. 
+data3 <- read.csv("../data/vertnet_6mil_records-2ea2e413e6584682a68b08d3a56c8493.tsv", sep ="\t", header = TRUE)
+```
+
+
+## inspecting the datasets
+```{r message=FALSE}
+head(data1)
+summary(data1)
+str(data1)
+```
+
+```{r message=FALSE}
+head(data2)
+summary(data2)
+str(data2)
+```
+
+## Column inspection 
+
+```{r, column_inspection}
+#Checking for columns which are missing in data2
+diff_cols_df1 <- setdiff(names(data1), names(data2))
+cat("Columns in data1 not in data2: ", paste(diff_cols_df1, collapse = ", "), "\n")
+
+## Checking for columns which are missing in data1
+diff_cols_df2 <- setdiff(names(data2), names(data1))
+cat("Columns in data2 not in data1: ", paste(diff_cols_df2, collapse = ", "), "\n")
+diff_cols_df2
+```
+
+## Merge data
+Now that we know both the data sets have some missing columns, lets remove them so that they can be merged. 
+```{r, mergedatasets}
+
+common_cols <- intersect(names(data1), names(data3))
+
+data1 <- data1[, common_cols]
+#data2 <- data2[, common_cols]
+data3 <- data3[, common_cols]
+
+merged_df <- rbind(data1, data3)
+```
+
+
+## Retain Unique records
+checking for any duplicate records and keeping unique records since we merged two different source data sets
+```{r, retain_uniquerecords}
+cleaned_df <- unique(merged_df)
+```
+
+
+## removing records which are all the fossilrecords
+```{r, fossilrecords}
+cleaned_df <- subset(cleaned_df, basisofrecord != "FossilSpecimen")
+```
+
+## Removing Unnecessary rows
+
+```{r}
+#Let's remove question marked rows from only certain columns - like country/family/order
+columns_to_check <- c("country", "order", "family")
+
+#Let's write a function to identify "?"
+
+has_question_mark_in_specific_columns <- function(row) {
+  any(sapply(row[columns_to_check], function(col) grepl("\\?", col)))
+}
+
+#Applying function
+question_mark_rows <- apply(cleaned_df, 1, has_question_mark_in_specific_columns)
+
+#remove identified rows
+cleaned_df <- cleaned_df[!question_mark_rows, ]
+
+```
+
+## Dealing with Country names 
+It seems like country column also lot of issues - let's try and clean that up. 
+```{r}
+#combine and count the unique entries of countries, Will be using this df to cross check and manually validate the country names ~ have run this after every cleaning step w.r.t country name is conducted. 
+country_counts <- cleaned_df %>%
+  group_by(country) %>%
+  summarise(count = n())
+```
+
+```{r}
+#to remove country column entries which starts with brackets and numbers
+cleaned_df <- cleaned_df %>%
+  filter(!grepl("^(\\d|\\()", country)) %>%
+#lets get them all to same lettering style
+  mutate(country = str_to_title(country)) %>%
+  mutate(country = str_replace_all(country, "([A-Z])", " \\1"))
+
+#There seems to be a lot of full stops at the end of many countries, let's remove them
+cleaned_df$country <- sub("\\.$", "", cleaned_df$country)
+
+# Almost all the islands were abbreviated as either I or Is, Let us now rename them as Islands
+
+cleaned_df$country <- gsub("\\bI\\b", "Islands", cleaned_df$country)
+cleaned_df$country <- gsub("\\bIs\\b", "Islands", cleaned_df$country)
+```
+
+
+```{r, merging countries}
+# to merge all different named US data into one
+
+replace_names <- function(x) {
+  if (grepl("United  States|	
+United  States  Of  America|United  States  Minor  Outlying  Islands", x, ignore.case = FALSE)) {
+    return("The United States of America")
+  } else {
+    return(x)
+  }
+}
+
+cleaned_df$country <- sapply(cleaned_df$country, replace_names)
+
+#lets try to loop over something else
+replace_names_ADRM <- function(x) {
+  if (grepl("Admiralty|Admiralty  Group
+|Admiralty  Islands
+", x, ignore.case = FALSE)) {
+    return("Admiralty  Islands")
+  } else {
+    return(x)
+  }
+}
+
+cleaned_df$country <- sapply(cleaned_df$country, replace_names_ADRM)
+
+#with antipode islands
+replace_names_ANTD <- function(x) {
+  if (grepl("Antipodes  Island|Antipodes  Islands
+|Antipodes  Islands. [ S.e.  Of  New  Zealand]
+|Antipodes  Islands;  New  Zealand
+", x, ignore.case = FALSE)) {
+    return("Antipodes  Islands")
+  } else {
+    return(x)
+  }
+}
+
+cleaned_df$country <- sapply(cleaned_df$country, replace_names_ANTD)
+
+
+#okay this works - but this is not ideal - I will die before I could manually scan and loop over remaining 1316 entries
+```
+
+```{r warning=FALSE}
+# coming back to this and trying again to see how things go this time
+
+# Assuming your dataset is named 'my_data' and the column with country names is 'country'
+cleaned_df$StandardName <- countrycode(cleaned_df$country, origin = "country.name", destination = "iso3c")
+
+#now let's get a sense of rows which didn't have any hits
+
+non_matching_records <- cleaned_df %>% filter(is.na(StandardName))
+
+#snippet to match back the ISO to country name - this needs to be done later as well, but for now keeping hit here and trying out
+
+iso_codes <- unique(cleaned_df$StandardName) # ISO codes which has hits
+
+country_names <- countrycode(iso_codes, origin = "iso3c", destination = "country.name") #original codes
+
+#now lets create a data frame with standard name and code so that they can be merged with cleaned_df
+
+iso_to_standard_mapping <- data.frame(
+  ISOCode = iso_codes,
+  StandardName = country_names
+)
+
+#now let's merge
+cleaned_df <- merge(cleaned_df, iso_to_standard_mapping, by.x = "StandardName", by.y = "ISOCode", all.x = TRUE)
+
+#for some reason column name is changing - let's rename it back as "country2"
+colnames(cleaned_df)[colnames(cleaned_df) == "StandardName.y"] <- "country2"
+
+```
+
+
+## Dealing with dates
+```{r, warning=FALSE}
+cleaned_df$year <- gsub(".*([0-9]{4}).*", "\\1", cleaned_df$year)
+cleaned_df$year <- as.numeric(cleaned_df$year)
+
+```
+
+## Binning years into chunks of 5 year interval
+```{r}
+bin_width <- 5
+year_range <- seq(1600, 2023, bin_width)
+```
+
+```{r}
+cleaned_df$YearBin <- cut(cleaned_df$year, breaks = year_range, labels = year_range[1:(length(year_range)-1)])
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+let's write this as a working data for the time being
+```{r}
+write.csv(cleaned_df,"../data/cleaned_vertnet.csv", row.names = FALSE)
+```
+
+
+

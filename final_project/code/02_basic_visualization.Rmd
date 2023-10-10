@@ -1,0 +1,91 @@
+---
+title: "02_basic_visuals.Rmd"
+author: "Vinay K L"
+date: "2023-10-07"
+output: pdf_document
+latex_engine: xelatex
+  includes:
+      in_header: header.tex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(sf)
+library(ggplot2)
+library(dplyr)
+library(leaflet)
+```
+
+# load cleaned data as df
+```{r}
+df <- read.csv("final_project/data/cleaned_vertnet.csv")
+```
+
+## Visualise the data across years as bins of 5 years
+```{r}
+ggplot(df, aes(x = as.factor(YearBin))) +
+  geom_bar(fill = "cyan", color = "black") +
+  labs(x = "Year of Collection", y = "Count") +
+  ggtitle("Data Distribution Across Years") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))
+```
+
+## Visualise the data based on the country of collections
+
+```{r}
+count_data <- df %>%
+  group_by(country) %>%
+  summarise(Count = n())
+```
+
+```{r load world map}
+world_map <- st_read("final_project/data/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp")
+```
+
+```{r}
+merged_data <- merge(world_map, result_df, by.x = "NAME", by.y = "Standardized", all.x = TRUE)
+```
+
+
+```{r}
+ggplot(merged_data, aes(fill = total_count)) +
+  geom_sf() +
+  scale_fill_gradient(low = "lightblue", high = "blue") +
+  labs(title = "Map of Record Count with USA", fill = "Record Count") +
+  theme_minimal()
+```
+
+## Since US is skewing the data - lets remove US and see how things go. 
+
+```{r}
+removed_country <- "United States of America"
+
+data_filtered_to_rmUSA <- result_df %>% filter(Standardized != removed_country)
+```
+
+```{r}
+merged_data_post_rmUSA <- merge(world_map, data_filtered_to_rmUSA, by.x = "NAME", by.y = "Standardized", all.x = TRUE)
+```
+
+
+```{r}
+ggplot(merged_data_post_rmUSA, aes(fill = total_count)) +
+  geom_sf() +
+  scale_fill_gradient(low = "lightblue", high = "blue") +
+  labs(title = "Map of Record Count without USA", fill = "Record Count") +
+  theme_minimal()
+```
+
+
+```{r}
+df$decimallatitude <- as.numeric(df$decimallatitude)
+df$decimallongitude <- as.numeric(df$decimallongitude)
+```
+
+
+
+
