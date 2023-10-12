@@ -16,9 +16,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Q1
+Find average using loop and colmeans
 
 ## Solution
-
 ```{r}
 set.seed(12) # to be reproducible
 A = matrix(data = runif(n = 1:500), nrow = 50, ncol = 10)
@@ -26,31 +26,36 @@ colnames(A) = paste("lake", 1:10, sep = "_")
 ```
 
 Using for loop
-
 ```{r}
+#vector
 num_lakes <- ncol(A)
+
+#calculte average
 average_values1 <- numeric(num_lakes)
 
+#loop over it 
 for (i in 1:num_lakes) {
   average_values1[i] <- mean(A[, i])
 }
 
+#checking
 print(average_values1)
 ```
 
 Using colMeans()
-
 ```{r}
+#vector
 average_values2 <- colMeans(A)
 
+#checking
 print(average_values2)
 ```
 
 
 ## Q2 
+Matrix using apply and nested loop
 
 ## Solution
-
 ```{r}
 # checking what's the results are first.
 x = array(1:27, dim = c(3, 3, 3))
@@ -58,11 +63,32 @@ apply(X = x, MARGIN = c(1, 2),
       FUN = paste, collapse = ", ")
 ```
 
+```{r}
+#get the array
+x = array(1:27, dim = c(3, 3, 3))
+
+#lets define how many rows and cols we need
+nrows <- dim(x)[1]
+ncols <- dim(x)[2]
+
+#creating empty matrix to store the for loops result
+matrix_c <- matrix(NA, nrow = nrows, ncol = ncols)
+
+#looping over rows and cols
+for (i in 1:nrows) {
+  for (j in 1:ncols) {
+    matrix_c[i, j] <- paste(x[i, j, ], collapse = ", ")
+  }
+}
+print(matrix_c)
+```
+
+
 
 ## Q3 
+Fibonacci sequence 
 
-Fibonacci seqeunce 
-
+## Solution
 ```{r echo=FALSE}
 # Lets add vectors
 fib <- numeric(30)
@@ -77,5 +103,57 @@ for (i in 3:30) {
 # Let's check the results and print them
 fib
 ```
+
+
+## Q4 
+Top 500 list and string
+
+## Solution
+```{r}
+# Read the data from the URL
+top105 = readLines("http://www.textfiles.com/music/ktop100.txt")
+top105 = top105[-c(64, 65)] # missing No. 54 and 55
+
+# I am combining the lines into single text since 
+#readLines is dragging the initial lines/headers and tail lines which also has numbers etc
+text = paste(top105, collapse = "\n")
+
+#extracting the ranking using gsub - removing all the other 
+#details associated with the ranking
+ranking_numbers = gsub("(\\d+\\.)", "\\1", 
+                       unlist(regmatches(text, 
+                                         gregexpr("\\d+\\.", text))))
+
+# removing empty strings if any
+ranking_numbers = ranking_numbers[ranking_numbers != ""]
+
+# checking
+ranking_numbers
+```
+## Q 5 
+Remove traling . and find duplicates
+
+## Solution
+```{r}
+#remove trailing dots
+ranking_numbers <- sub("\\.$", "", ranking_numbers)
+
+#checking
+head(ranking_numbers, n =5)
+
+#convert to numeric
+ranking_numbers_nm <- as.numeric(ranking_numbers)
+
+#more checking
+head(ranking_numbers_nm, n =5)
+
+#extracting duplicated rankings
+duplicated_rankings <- ranking_numbers_nm[duplicated(ranking_numbers_nm)]
+
+#final check
+head(duplicated_rankings, n = 5)
+```
+
+
 
 
