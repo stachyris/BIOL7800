@@ -45,7 +45,6 @@ data2 <- read.csv("../data/aves_vertnet_records-43452c1446904be6ba9641c86f891234
 data3 <- read.csv("../data/vertnet_6mil_records-2ea2e413e6584682a68b08d3a56c8493.tsv", sep ="\t", header = TRUE)
 ```
 
-
 ## inspecting the datasets
 ```{r message=FALSE}
 head(data1)
@@ -135,7 +134,6 @@ cleaned_df$country <- gsub("\\bI\\b", "Islands", cleaned_df$country)
 cleaned_df$country <- gsub("\\bIs\\b", "Islands", cleaned_df$country)
 ```
 
-
 ```{r}
 #combine and count the unique entries of countries, Will be using this df to cross check and manually validate the country names ~ have run this after every cleaning step w.r.t country name is conducted. 
 country_counts <- cleaned_df %>%
@@ -144,10 +142,10 @@ country_counts <- cleaned_df %>%
 ```
 
 ================================================================================
-|                                                                             |
-| We are moving onto 01_01_country.Rmd script from here till we resolve all.  | 
-|country names issue                                                          |
-|                                                                             |
+|                                                                              |
+| We are moving onto 01_01_country.Rmd script from here till we resolve all.   | 
+|country names issue                                                           |
+|                                                                              |
 ================================================================================
 
 ## Dealing with dates

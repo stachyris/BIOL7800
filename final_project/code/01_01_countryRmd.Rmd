@@ -15,385 +15,448 @@ library(fuzzyjoin)
 library(readr)
 ```
 
-## Dealing with Country names 
-It seems like country column also lot of issues - let's try and clean that up. 
-
-
 ```{r}
 #lets keep the cleaned_df separately and work on the new dataframe to keep things in control
-
 country_clean <- cleaned_df
 ```
 
-```{r}
+```{r, country count check}
 # to cound the unique entries
 country_counts_check <- country_clean %>%
   group_by(country) %>%
   summarise(count = n())
+# 1331 entries - T 
 ```
 
-
 ```{r, merging countries}
+# Creating a list of all the 'country functions' to store the names and then looping over the column to replace the entries. 
 
-# "I found a better loop function to do this - but I am not gonna implement that right away as I won't have a check point in between. Will manually do this first and then will do that loop function if everything goes well - loop function is saved on the GitHub Random_Scripts repo with appropriate name"
+# There's always gonna be a descripency on the total number of countries. I am following www.countrycode.org to keep things in check which has an ISO 3166-1 alpha-3 (https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3) these includes Oceania and Island countries.
 
-
-# to merge all different named US data into one
-
-replace_names_USA <- function(x) {
+replace_functions <- list (
+# United States of America
+    USA <- function(x) {
   if (grepl("United  States|	
-United  States  Of  America|United  States  Minor  Outlying  Islands|Usa|The  United  States  Midway  Atoll ( Usa)
-", x, ignore.case = TRUE)) {
+United  States  Of  America|United  States  Minor  Outlying  Islands|Usa|The  United  States  Midway  Atoll ( Usa)| Alaska| American  Samoa| Baker  Island| Arctic  America| Commonwealth  Of  The  Northern  Mariana  Islands| Dmns  Grounds, 2001  Colorado  Blvd,  West  Atrium  Sidewalk", x, ignore.case = TRUE)) {
     return("The United States of America")
   } else {
     return(x)
   }
-}
-
-#lets try to loop over something else
-replace_names_ADRM <- function(x) {
-  if (grepl("Admiralty|Admiralty  Group
-|Admiralty  Islands
-", x, ignore.case = TRUE)) {
-    return("Admiralty  Islands")
-  } else {
-    return(x)
-  }
-}
-
-#with antipode islands
-replace_names_ANTD <- function(x) {
-  if (grepl("Antipodes  Island|Antipodes  Islands
-|Antipodes  Islands. [ S.e.  Of  New  Zealand]
-|Antipodes  Islands;  New  Zealand
-", x, ignore.case = TRUE)) {
-    return("Antipodes  Islands")
-  } else {
-    return(x)
-  }
-}
-
+},
 # Philipines
-replace_names_PHIL <- function(x) {
-  if (grepl("Philippine| Philippine  Ids
-| Philippine  Islands
-| Philippine  Isls
-| Philippine's
-|Philippines| Philippines  Isl
-| Philippines  Islands
-|Phill| Phillipine  Islands
-| Phillipines
-| Philip| Batan  Island| Batanta  Islands", x, ignore.case = TRUE)) {
+  PHL <- function(x) {
+  if (grepl("Philippine| Philippine  Ids| Philippine  Islands| Philippine  Isls| Philippine's|Philippines| Philippines  Isl| Philippines  Islands|Phill| Phillipine  Islands| Phillipines| Philip| Batan  Island| Batanta  Islands| Bongao  Islands", x, ignore.case = TRUE)) {
     return("Philippines")
   } else {
     return(x)
   }
-}
-
-# Aldabra  Islands
-replace_names_ALIS <- function(x) {
-  if (grepl("Aldabra  Islands|Aldabrar  Islands", x, ignore.case = TRUE)) {
-    return("Aldabra  Islands")
+},
+# Seychelles
+  SYC <- function(x) {
+  if (grepl("Aldabra  Islands|Aldabrar  Islands| Sychelles  Islands", x, ignore.case = TRUE)) {
+    return("Seychelles")
   } else {
     return(x)
   }
-}
-
+},
 #Antigua and Barbuda
-replace_names_ANBR <- function(x) {
-  if (grepl("Antigua| Antigua  And  Barbuda
-", x, ignore.case = TRUE)) {
-    return(" Antigua  And  Barbuda
-")
+  ATG <- function(x) {
+  if (grepl("Antigua| Antigua  And  Barbuda", x, ignore.case = TRUE)) {
+    return(" Antigua  And  Barbuda")
   } else {
     return(x)
   }
-}
-
-#auckland Islands
-replace_names_AUIS <- function(x) {
-  if (grepl(" Auckland  Island|Auckland  Islands", x, ignore.case = TRUE)) {
-    return("Auckland  Islands")
-  } else {
-    return(x)
-  }
-}
-
+},
 # Portugal
-replace_names_PORT <- function(x) {
+  PRT <- function(x) {
   if (grepl(" Azores  Archipelago;  Portugal| Madeira;  Portugal| Portugal| Azores", x, ignore.case = TRUE)) {
     return("Portugal")
   } else {
     return(x)
   }
-}
-
+},
 #Bahamas
-replace_names_BAHA <- function(x) {
+  BHS <- function(x) {
   if (grepl(" Bahama  Islands|Bahamas| Bahamas,  The", x, ignore.case = TRUE)) {
     return("Bahamas")
   } else {
     return(x)
   }
-}
-
-# Banda Islands
-replace_names_BAIS <- function(x) {
-  if (grepl(" Banda  Islands|Banda  Islands's", x, ignore.case = TRUE)) {
-    return("Banda  Islands")
-  } else {
-    return(x)
-  }
-}
-
-# Celebes  And  Flores  Islands
-replace_names_CEFLIS <- function(x) {
-  if (grepl(" Between  Celebes  And  Flores  Islands| Between  Celebes &  Flores  Islands| Between  Flores  And  Celebes", x, ignore.case = TRUE)) {
-    return("Celebes  And  Flores  Islands")
-  } else {
-    return(x)
-  }
-}
-
+},
 # Bhutan
-replace_names_BHUT <- function(x) {
+  BTN <- function(x) {
   if (grepl("Bhutan| Bhutan,  India", x, ignore.case = TRUE)) {
     return("Bhutan")
   } else {
     return(x)
   }
-}
-
-# Bismarck Archipelago
-replace_names_BIAR <- function(x) {
-  if (grepl(" Bismarck  Arch| Bismarck  Archip| Bismark  Arch| Bismark  Archip| Bismark  Islands", x, ignore.case = TRUE)) {
-    return("Bismarck Archipelago")
-  } else {
-    return(x)
-  }
-}
-
+},
 #Bosnia  And  Hercegovina
-replace_names_BOHE <- function(x) {
+  BIH <- function(x) {
   if (grepl(" Bosnia  And  Hercegovina| Bosnia  And  Herzegovina", x, ignore.case = TRUE)) {
     return("Bosnia  And  Herzegovina")
   } else {
     return(x)
   }
-}
-
-# Buru Islands
-replace_names_BUIS <- function(x) {
-  if (grepl(" Buru| Buru  Islands", x, ignore.case = TRUE)) {
-    return("Buru  Islands")
-  } else {
-    return(x)
-  }
-}
-
+},
 # British Overseas Territories
-replace_names_BROT<- function(x) {
+  IOT <- function(x) {
   if (grepl(" Anguilla| Ascension  Island| Saint  Helena,  Ascension  And  Tristan  Da  Cunha| Bermuda| British  Virgin  Islands| Cayman  Islands| Grand  Cayman| Grand  Cayman  Islands| Falkland  Islands| Falkland  Islands ( Malvinas)| Falkland  Islands;  British  Overseas  Territories| Gilbert  Islands| Montserrat| Gough  Island;  St  Helena  Dependency,  Tristan  Da  Cunha  Island  Group;  British  Overseas  Territory| Saint  Helena| Saint  Helena,  Ascension  And  Tristan  Da  Cunha| St.  Helena| Tristan  Da  Cunha| Turks  And  Caicos  Islands| Caicos| Caicos  Islands", x, ignore.case = TRUE)) {
     return("British Overseas Territories")
   } else {
     return(x)
   }
-}
-
-# Bonin Islands
-replace_names_BOIS <- function(x) {
-  if (grepl(" Bonin  Islands| Bonin  Isle", x, ignore.case = TRUE)) {
-    return("Bonin  Islands")
+},
+# Spain
+  ESP <- function(x) {
+  if (grepl(" Canary  Islands| Canary  Islands;  Spain| Spain", x, ignore.case = TRUE)) {
+    return("Spain")
   } else {
     return(x)
   }
-}
-
-# Canary Islands
-replace_names_CAIS <- function(x) {
-  if (grepl(" Canary  Islands| Canary  Islands;  Spain", x, ignore.case = TRUE)) {
-    return("Canary  Islands")
-  } else {
-    return(x)
-  }
-}
-
+},
 #Indonesia
-replace_names_INDO <- function(x) {
-  if (grepl(" C.  Celebes|Celebes| Celebes  Islands| Celebres| Cent.  Celebes| Centr.  Celebes| Djampea  Islands. ( S.  Of  Celebes)| E  Celebes| E  Of  Celebes| E.  Celebes| E.  Celebes  Islands| E.  Of  Celebes| E.  Of  Celebes  Islands| E.of  Celebes| East  Celebes| East  Of  Celebes| N  Celebes| N.  Celebes| N.  Celebes  Islands| N.  E.of  Celebes| N.  Of  Celebes| N.celebes| N.e.  Celebes| N.of  Celebes| N.w.  Celebes| North  Celebes| Nw.  Celebes| S  Celebes| S.  Celebes| S.  Celebes  Islands| S.  Central  Celebes| S.  Of  Celebes| S.e.  Celebes| S.e.  Of  Celebes| S.e.  Of  Celebes  Islands| S.o.  Celebes| S.of  Celebes| S.w.  Celebes| Se  Celebes| Se.  Celebes| South  Celebes| South  Of  Celebes| Sula- Celebes  Islands| Sulu  Islands. ( N.  Celebes)|Celebes  And  Flores  Islands| Indonesia:  Sulawesi| Indonesia| Ceram| Ceram  Islands| Ceram  Laut| Ceram  Laut  Islands| Cent.  D.  New  Guinea| Cent.  D.n.  Guinea| Cent.  Du.  New  Guinea| Cent.  Dut.  New  Guinea| Cent.  Dutch  N.  Guinea| Cent.  Dutch  New  Guinea| Centr.  Dutch  New  Guinea| D.   New  Guinea| D.  New  Guina| Du  New  Guinea| Du.  New  Guiana| Du.  New  Guinea ( East  Coast)| Dutch  New  Guin| Dutch  New  Guinea| Centr.  Molucca's| Centr.  Moluccas| Brit.  D.  New  Guinea| C.  D.  New  Guinea| C.d.  New  Guinea| Centr.du.  New  Guinea| Du.  New  Guinea ( East  Coast)| E.  C.  D.  New  Guinea| E.  Centr.  Du.  New  Guinea| E.centr.du.  New  Guinea| N.w.  D.  New  Guinea| N.w.du.  New  Guinea| North  Coast  D.  New  Guinea| S.  Of  D.  New  Guinea| S.c.  D.  New  Guinea| S.centr.  Du.  New  Guinea| S.centr.du  New  Guinea| S.centr.du.  New  Guinea| W.  Of  D.  New  Guinea| W.  Of  Du.  New  Guinea| Aru  Islands| Batavia| E.  Java| E.  Java  Islands| East  Of  Java| Java| Java  Islands| N.  Java| N.  Of  Java| N.  Of  Java  Islands| N.e.  Java| N.e.  Of  Java| S.  Java| S.  Java  Islands| S.  Of  Java| W.  Java| W.  Java  Islands| West  Java| Lombok| Lombok  Islands| N.  Lombok| N.  Lombok  Islands|Banda  Islands", x, ignore.case = TRUE)) {
+  IDN <- function(x) {
+  if (grepl(" C.  Celebes|Celebes| Celebes  Islands| Celebres| Cent.  Celebes| Centr.  Celebes| Djampea  Islands. ( S.  Of  Celebes)| E  Celebes| E  Of  Celebes| E.  Celebes| E.  Celebes  Islands| E.  Of  Celebes| E.  Of  Celebes  Islands| E.of  Celebes| East  Celebes| East  Of  Celebes| N  Celebes| N.  Celebes| N.  Celebes  Islands| N.  E.of  Celebes| N.  Of  Celebes| N.celebes| N.e.  Celebes| N.of  Celebes| N.w.  Celebes| North  Celebes| Nw.  Celebes| S  Celebes| S.  Celebes| S.  Celebes  Islands| S.  Central  Celebes| S.  Of  Celebes| S.e.  Celebes| S.e.  Of  Celebes| S.e.  Of  Celebes  Islands| S.o.  Celebes| S.of  Celebes| S.w.  Celebes| Se  Celebes| Se.  Celebes| South  Celebes| South  Of  Celebes| Sula- Celebes  Islands| Sulu  Islands. ( N.  Celebes)|Celebes  And  Flores  Islands| Indonesia:  Sulawesi| Indonesia| Ceram| Ceram  Islands| Ceram  Laut| Ceram  Laut  Islands| Cent.  D.  New  Guinea| Cent.  D.n.  Guinea| Cent.  Du.  New  Guinea| Cent.  Dut.  New  Guinea| Cent.  Dutch  N.  Guinea| Cent.  Dutch  New  Guinea| Centr.  Dutch  New  Guinea| D.   New  Guinea| D.  New  Guina| Du  New  Guinea| Du.  New  Guiana| Du.  New  Guinea ( East  Coast)| Dutch  New  Guin| Dutch  New  Guinea| Centr.  Molucca's| Centr.  Moluccas| Brit.  D.  New  Guinea| C.  D.  New  Guinea| C.d.  New  Guinea| Centr.du.  New  Guinea| Du.  New  Guinea ( East  Coast)| E.  C.  D.  New  Guinea| E.  Centr.  Du.  New  Guinea| E.centr.du.  New  Guinea| N.w.  D.  New  Guinea| N.w.du.  New  Guinea| North  Coast  D.  New  Guinea| S.  Of  D.  New  Guinea| S.c.  D.  New  Guinea| S.centr.  Du.  New  Guinea| S.centr.du  New  Guinea| S.centr.du.  New  Guinea| W.  Of  D.  New  Guinea| W.  Of  Du.  New  Guinea| Aru  Islands| Batavia| E.  Java| E.  Java  Islands| East  Of  Java| Java| Java  Islands| N.  Java| N.  Of  Java| N.  Of  Java  Islands| N.e.  Java| N.e.  Of  Java| S.  Java| S.  Java  Islands| S.  Of  Java| W.  Java| W.  Java  Islands| West  Java| Lombok| Lombok  Islands| N.  Lombok| N.  Lombok  Islands|Banda  Islands| Alor  Islands| Banggai| Batjan  Islands| Biak  Islands| N.  Du.  New  Guinea| N.  Of  D.  New  Guinea| N.  Of  Du.  New  Guinea| N.  W.   D.  New  Guinea| N.du.  New  Guinea| Timor| Timor  Islands| Timor  Laut| Timor  Laut  Islands. =  Tenimber| Timor  Laut  Islands. =  Tenimeber| Timor  Laut [ =  Tenimber  Islands.]| Timor- Leste| Toekang  Besi  Islands| Tomia  Islands| Buru| Buru  Islands| Banda  Islands|Banda  Islands'| Between  Celebes  And  Flores  Islands| Between  Celebes &  Flores  Islands| Between  Flores  And  Celebes| West  Borneo| D.  East  Indies| D.e.  Ind| D.e.  Indies| Dammer  Islands| Djampea  Islands| Engano  Islands| Lesser  Sunda  Islands", x, ignore.case = TRUE)) {
     return("Indonesia")
   } else {
     return(x)
   }
-}
-
+},
 # Sri Lanka
-replace_names_SRLA <- function(x) {
+  LKA <- function(x) {
   if (grepl(" Br.  India,  Ceylon| Central  Ceylon| Ceylon| Ceylon  Islands| N.  Ceylon| N.e.  Ceylon| N.w.  Ceylon| S.  Ceylon| S.e.  Coast  Of  Ceylon  Islands| South  Ceylon| W.  Ceylon| West  Ceylon| Sri  Lanka", x, ignore.case = TRUE)) {
     return("Sri Lanka")
   } else {
     return(x)
   }
-}
-
+},
 # Japan
-replace_names_JAPA <- function(x) {
-  if (grepl(" Central  Japan| E.  Of  Japan| Japan| Japan,| Japan,  Okinawa| Japan,  S.  Loo  Choo  Islands| N.  Japan| Off  Japan| S  Japan| S.  Japan| S.  Of  Japan| C.  Loo  Choo  Islands| Cent.  Loo  Choo  Islands| Cent.  Loo- Choo  Islands| Cent.  S.  Loo  Choo  Islands| Central  Loo  Choo  Islands| Central  N.  Loo  Choo  Islands| Japan,  S.  Loo  Choo  Islands| Loo  Choo  Islands| N  Loo  Choo  Islands| N.  Loo  Choo  Islands| N.  Loo  Chov  Islands| N.  Loo- Choo  Islands| N.  Loochoo  Islands| No.  S.  Loo  Choo  Islands| S.  Loo  Choo  Islands| S.  Loo- Choo  Islands| South  Loo  Choo  Islands| Ryukyu  Islands| So.  Ryukyus| Southern  Ryukyus", x, ignore.case = TRUE)) {
+  JPN <- function(x) {
+  if (grepl(" Central  Japan| E.  Of  Japan| Japan| Japan,| Japan,  Okinawa| Japan,  S.  Loo  Choo  Islands| N.  Japan| Off  Japan| S  Japan| S.  Japan| S.  Of  Japan| C.  Loo  Choo  Islands| Cent.  Loo  Choo  Islands| Cent.  Loo- Choo  Islands| Cent.  S.  Loo  Choo  Islands| Central  Loo  Choo  Islands| Central  N.  Loo  Choo  Islands| Japan,  S.  Loo  Choo  Islands| Loo  Choo  Islands| N  Loo  Choo  Islands| N.  Loo  Choo  Islands| N.  Loo  Chov  Islands| N.  Loo- Choo  Islands| N.  Loochoo  Islands| No.  S.  Loo  Choo  Islands| S.  Loo  Choo  Islands| S.  Loo- Choo  Islands| South  Loo  Choo  Islands| Ryukyu  Islands| So.  Ryukyus| Southern  Ryukyus| Bonin  Islands| Bonin  Isle", x, ignore.case = TRUE)) {
     return("Japan")
   } else {
     return(x)
   }
-}
-
+},
 # Taiwan
-replace_names_TAIW <- function(x) {
+  TWN <- function(x) {
   if (grepl(" Formosa,  Taiwan| Taiwan| C.  Formosa| Cent.  Formosa| Cent.  Formosa  Islands| Central  Formosa| Formosa  Islands| Formosa,  Taiwan| N  Formosa| N.  Formosa| S.  Formosa| S.w.  Formosa| South  Formosa", x, ignore.case = TRUE)) {
     return("Taiwan")
   } else {
     return(x)
   }
-}
-
-# Burma
-replace_names_BURM <- function(x) {
+},
+# Burma/Myanmar
+  MMR <- function(x) {
   if (grepl(" Burma| Burma;  India| Burma;  Malaysia;  Thailand", x, ignore.case = TRUE)) {
     return("Burma")
   } else {
     return(x)
   }
-}
-
+},
 # Cape verde
-replace_names_CVIS <- function(x) {
+  CPV <- function(x) {
   if (grepl(" Cape  Verde| Cape  Verde  Islands", x, ignore.case = TRUE)) {
     return("Cape Verde")
   } else {
     return(x)
   }
-}
-
+},
 # Costa Rica
-replace_names_CORI <- function(x) {
-  if (grepl(" Cocos  Island ( Costa  Rica)| Costa  Rica| Cocos  Island ( Costa  Rica)| Cocos  Islands| Cocos ( Keeling)  Islands", x, ignore.case = TRUE)) {
+  CRI <- function(x) {
+  if (grepl(" Cocos  Island ( Costa  Rica)| Costa  Rica| Cocos  Island ( Costa  Rica)| Cocos  Islands", x, ignore.case = TRUE)) {
     return("Costa Rica")
   } else {
     return(x)
   }
-}
-
+},
 # Brunei
-replace_names_BRUN <- function(x) {
+  BRN <- function(x) {
   if (grepl(" Brunei| Brunei  Darussalam", x, ignore.case = TRUE)) {
     return("Nation of Brunei")
   } else {
     return(x)
   }
-}
-
+},
 # Colombia
-replace_names_COLM <- function(x) {
+  COL <- function(x) {
   if (grepl(" Colombia| Columbia| Colòmbia", x, ignore.case = TRUE)) {
     return("Colombia")
   } else {
     return(x)
   }
-}
-
+},
 # Somalia - Combining all of somalia including Somaliland and other colonical classification
-replace_names_SOMA <- function(x) {
+  SOM <- function(x) {
   if (grepl(" Br.  Somaliland| Brit  Somaliland| Brit.  Somalailand| Brit.  Somaliland| British  Somaliland| Fr.  Somaliland| N.  Somaliland| N.e.  British  Somaliland| N.w.  Somaliland| North  Somaliland| S.  Somaliland| Somalia| Somaliland| W.  Somaliland| Western  Italian  Somaliland| British  Somililand", x, ignore.case = TRUE)) {
     return("Somalia")
   } else {
     return(x)
   }
-}
-
+},
 #Norway
-replace_names_NORW <- function(x) {
+  NOR <- function(x) {
   if (grepl(" Centr.  Norway| N.  Norway| North  Norway| Norway| Norway;  Sweden;  Finland", x, ignore.case = TRUE)) {
     return("Norway")
   } else {
     return(x)
   }
-}
-
+},
 # Vietnam
-replace_names_VIET <- function(x) {
-  if (grepl(" Cochin  China| Cochin- China| Vietnam", x, ignore.case = TRUE)) {
+  VNM <- function(x) {
+  if (grepl(" Cochin  China| Cochin- China| Vietnam| Annam| Annan| Tonkin", x, ignore.case = TRUE)) {
     return("Vietnam")
   } else {
     return(x)
   }
-}
-
-# Democratic Republic of Congo
-replace_names_DRC <- function(x) {
-  if (grepl(" Belg.  Congo| Cent.  Congo| Congo| Congo  Border| Congo  F.  State| Congo /  Congo,  Dem.  Rep.  Of  The| Congo,  Dem.  Rep.  Of  The| Congo,  Democratic  Republic  Of| Democratic  Republic  Congo| Democratic  Republic  Of  Congo| Democratic  Republic  Of  The  Congo| Eastern  Congo| Low.  Congo| N.  Belg.  Congo| Republic  Of  The  Congo| S.e.  Congo| Up.  Congo| W.  Congo", x, ignore.case = TRUE)) {
-    return("Democratic Republic of the Congo ")
+},
+# Papua New Guinea
+  PNG <- function(x) {
+  if (grepl(" Br  New  Guinea| Br.  New  Guinea ( N.  Coast)| Brit.   New  Guinea| E.  Br.  New  Guinea| E.  Germ.  New  Guinea| East  Cent.  New  Guinea| Ger.  New  Guinea ( N.  Coast)| Ger.  New  Guinea,  N.  Coast| Germ.   New  Guinea| Germ.  D.  New  Guinea| Germ.  New  Guinea| German  Papua  New  Guinea| N.  Coast  Of  Ger.  New  Guinea| N.  Coast.  Of  Ger.  New  Guinea| N.  Germ.  New  Guinea| N.  Germ.  New  Guinea| N.br.  New  Guinea| N.e.  British  New  Guinea| N.e.br.  New  Guinea| N.w  New  Guinea| N.w.  Br.  New  Guinea| N.w.  Of   New  Guinea| N.w.  Of  New  Guinea| New  Guinea| Papua  New  Guinea| Papua,  New  Guinea| Rook  Islands. [ E.  Of  Ger.  New  Guinea]| S.e  New  Guinea| S.e.  Of   New  Guinea| S.e.  Of  Br.  New  Guinea| S.e.  Of  Brit.  New  Guinea| S.e.  Of  British  New  Guinea| S.e.  Of  New  Guinea| S.e.  Of  New  Guinea [ Louisiade  Archip.]| S.e.br.  New  Guinea| So.  Centr.  Du.  New  Guinea| South  East  Of  New  Guinea| W.  Of  New  Guinea| West  New  Guinea| Witu  Islands. [ N.e.  Of  New  Guinea]| Bismarck  Arch| Bismarck  Archip| Bismark  Arch| Bismark  Archip| Bismark  Islands|Admiralty|Admiralty  Group|Admiralty  Islands| Duke  Of  York  Islands| E.  Of  S.  New  Ireland| East  Of  New  Ireland| East  Of  S.  New  Ireland| East  Of  South  New  Ireland| New  Ireland| New  Ireland  Islands| S.e.  New  Ireland| S.e.  Of  New  Ireland| S.w.  New  Ireland| New  Britian  Islands| N.  Of  New  Hanover| New  Hanover| New  Hanover  Islands", x, ignore.case = TRUE)) {
+    return("Papua New Guinea")
+  } else {
+    return(x)
+  }
+},
+# New Zeland
+  NZL <- function(x) {
+  if (grepl(" Chatham  Islands;  New  Zealand| New  Zealand| The  Snares;  New  Zealand| Chatham  Islands| Tokelau| Antipodes  Island| Antipodes  Islands| Antipodes  Islands. [ S.e.  Of  New  Zealand]| Antipodes  Islands;  New  Zealand| Auckland  Island|Auckland  Island| Campbell  Island", x, ignore.case = TRUE)) {
+    return("New Zealand")
+  } else {
+    return(x)
+  }
+},
+# India
+  IND <- function(x) {
+  if (grepl(" India| S.  India| Andaman  And  Nicobar  Islands| Goa", x, ignore.case = TRUE)) {
+    return("India")
+  } else {
+    return(x)
+  }
+},
+# United Kingdom
+  GBR <- function(x) {
+  if (grepl(" England| United  Kingdom| Great  Britain| N.  Britain  Islands| N.  Of  New  Britain| Near  N.  New  Britain| New  Britain| New  Britain  Islands| Scotland| Wales| Northern  Ireland", x, ignore.case = TRUE)) {
+    return("United Kingdom")
+  } else {
+    return(x)
+  }
+},
+# Australia
+  AUS <- function(x) {
+  if (grepl(" Cocos ( Keeling)  Islands| Christmas  Island| Australia| S.w.  Australia| Gold  Coast| Gold  Coast  Hinter| Gold  Coast  Hinterland| Hinterland  Gold  Coast| Hinterland  Of  Gold  Coast", x, ignore.case = TRUE)) {
+    return("Australia")
+  } else {
+    return(x)
+  }
+},
+# Russia
+  RUS <- function(x) {
+  if (grepl(" Russia| Russian  Federation| N.  Russia| N  Russia| E.  Russia| E  Russia| S.  Russia| S.e.  Russia| So.  Russian  Altai| Commander  Islands| New  Siberia", x, ignore.case = TRUE)) {
+    return("Russia")
+  } else {
+    return(x)
+  }
+},
+# France
+  FRA <- function(x) {
+  if (grepl(" France| Territoire  Des  Terres  Australes  Et  Antarctiques  Françaises| França| Kerguelen  Islands;  France| N.  France| French  Guiana ( France)| N.  Coast  Of  France| N.w.  France| S.  France| S.e.  France| S.w.  France| French  Guiana| French  Southern  Territories| French  Guiana ( France)| Amsterdam  Island| Clipperton  Island| New  Caledonia", x, ignore.case = TRUE)) {
+    return("France")
+  } else {
+    return(x)
+  }
+},
+#Algeria
+    DZA <- function(x) {
+  if (grepl(" Algeria| N.  Algeria| S.  Algeria", x, ignore.case = TRUE)) {
+    return("Algeria")
+  } else {
+    return(x)
+  }
+},
+# Tonga
+    TON <- function(x) {
+  if (grepl(" Tonga| Alofa  Islands", x, ignore.case = TRUE)) {
+    return("Tonga")
+  } else {
+    return(x)
+  }
+},
+# French Polynesia
+    PYF <- function(x) {
+  if (grepl(" Austral  Islands| French  Polynesia", x, ignore.case = TRUE)) {
+    return("French Polynesia")
+  } else {
+    return(x)
+  }
+},
+# Venezuela
+    VEN <- function(x) {
+  if (grepl(" N.e.  Venezuela| Venezuela| Aves  Island", x, ignore.case = TRUE)) {
+    return("Venezuela")
+  } else {
+    return(x)
+  }
+},
+# China
+    CHN <- function(x) {
+  if (grepl(" C.  China| Centr.  China| China| E  China| E.  China| East  China| N.  China| N.e.  China| North  China| Off  S.  China| S.  China| S.  Of  China| S..  China| S.e  China| S.e.  China| S.w.  China| W  China| W.  China| Western  China", x, ignore.case = TRUE)) {
+    return("China")
+  } else {
+    return(x)
+  }
+},
+# Greece
+    GRC <- function(x) {
+  if (grepl(" Greece| Greeks| Cerigo  Islands| Crete| Crete  Islands", x, ignore.case = TRUE)) {
+    return("Greece")
+  } else {
+    return(x)
+  }
+},
+# Mauritius
+    MUS <- function(x) {
+  if (grepl(" Mauritius| Chagos  Archipelago", x, ignore.case = TRUE)) {
+    return("Mauritius")
+  } else {
+    return(x)
+  }
+},
+# Iceland
+    ISL <- function(x) {
+  if (grepl(" Coast  Of  N.  Iceland| Coast  Of  North  Iceland| Iceland| Iceland ( North)| N.  Iceland| N.e.  Iceland| No.  Iceland| North  Coast  Of  Iceland| North  Iceland", x, ignore.case = TRUE)) {
+    return("Iceland")
+  } else {
+    return(x)
+  }
+},
+# Comoros
+    COM <- function(x) {
+  if (grepl(" Comoro  Islands| Comoros", x, ignore.case = TRUE)) {
+    return("Comoros")
+  } else {
+    return(x)
+  }
+},
+# Ivory Coast
+    CIV <- function(x) {
+  if (grepl(" Cote  D'ivoire| Côte  D'ivoire| Ivory  Coast", x, ignore.case = TRUE)) {
+    return("Ivory Coast")
+  } else {
+    return(x)
+  }
+},
+# Ukraine
+    UKR <- function(x) {
+  if (grepl(" Ukraine| Crimea", x, ignore.case = TRUE)) {
+    return("Ukraine")
+  } else {
+    return(x)
+  }
+}, 
+# Libya
+    LBY <- function(x) {
+  if (grepl(" Libya| N.  Libya| Cyrenaica", x, ignore.case = TRUE)) {
+    return("Libya")
+  } else {
+    return(x)
+  }
+},
+# Poland
+    POL <- function(x) {
+  if (grepl(" N.  Of  Poland| Poland| Danzig  F.s", x, ignore.case = TRUE)) {
+    return("Poland")
+  } else {
+    return(x)
+  }
+},
+# DEMOCRATIC REPUBLIC OF THE CONGO
+    COD <- function(x) {
+  if (grepl(" Democratic  Republic  Congo| Democratic  Republic  Of  Congo| Democratic  Republic  Of  The  Congo", x, ignore.case = TRUE)) {
+    return("Democratic  Republic  Of  The  Congo")
+  } else {
+    return(x)
+  }
+},
+# Dominica
+    DMA <- function(x) {
+  if (grepl(" Dominica| W.  Indies,  Dominica  Islands", x, ignore.case = TRUE)) {
+    return("Dominica")
+  } else {
+    return(x)
+  }
+},
+# Dominican Republic
+    DOM <- function(x) {
+  if (grepl(" Dominican  Rep| Dominican  Republic", x, ignore.case = TRUE)) {
+    return("Dominican Republic")
+  } else {
+    return(x)
+  }
+}, 
+# Nigeria
+    NGA <- function(x) {
+  if (grepl(" N  Nigeria| N'ern  Nigeria| N.  Nigeria| Nigeria| No.  Nigeria| Northern  Nigeria| S  Nigeria| S'ern  Nigeria| S.  Nigera| S.  Nigeria| So  Nigeria| So.  Nigeria| South  Nigeria| Southern  Nigeria| W.  Nigeria", x, ignore.case = TRUE)) {
+    return("Nigeria")
+  } else {
+    return(x)
+  }
+},
+#  Vanuatu
+    VUT <- function(x) {
+  if (grepl(" Vanuatu| New  Hebrides  Islands| Southern  New  Hebrides", x, ignore.case = TRUE)) {
+    return("Vanuatu")
+  } else {
+    return(x)
+  }
+},
+# Solomon Islands
+    SLB <- function(x) {
+  if (grepl(" N.  Of  Solomon  Islands| S.  Solomon  Islands| Solomen  Islands| Solomon  Islands| Solomon  Islands:  New  Georgia  Group| Solomon's| Solomon's  Islands| Solomons| W.  Ofsolomon  Islands", x, ignore.case = TRUE)) {
+    return("Solomon Islands")
+  } else {
+    return(x)
+  }
+},
+# Chile
+    CHL <- function(x) {
+  if (grepl(" Easter  Island| Chile", x, ignore.case = TRUE)) {
+    return("Chili")
+  } else {
+    return(x)
+  }
+},
+# Faroe Islands
+    FRO <- function(x) {
+  if (grepl(" Faeroe  Islands| Faeroe  Islands;  Denmark| Faroe  Islands", x, ignore.case = TRUE)) {
+    return("Faroe Islands")
+  } else {
+    return(x)
+  }
+},
+# Micronesia
+    FSM <- function(x) {
+  if (grepl(" Federated  States  Of  Micronesia| Micronesia", x, ignore.case = TRUE)) {
+    return("Micronesia")
   } else {
     return(x)
   }
 }
-country_clean$country <- sapply(country_clean$country, replace_names_USA)
-country_clean$country <- sapply(country_clean$country, replace_names_ADRM)
-country_clean$country <- sapply(country_clean$country, replace_names_ANTD)
-country_clean$country <- sapply(country_clean$country, replace_names_PHIL)
-country_clean$country <- sapply(country_clean$country, replace_names_ALIS)
-country_clean$country <- sapply(country_clean$country, replace_names_ANBR)
-country_clean$country <- sapply(country_clean$country, replace_names_AUIS)
-country_clean$country <- sapply(country_clean$country, replace_names_BAHA)
-country_clean$country <- sapply(country_clean$country, replace_names_BAIS)
-country_clean$country <- sapply(country_clean$country, replace_names_CEFLIS)
-country_clean$country <- sapply(country_clean$country, replace_names_BHUT)
-country_clean$country <- sapply(country_clean$country, replace_names_BIAR)
-country_clean$country <- sapply(country_clean$country, replace_names_BOHE)
-country_clean$country <- sapply(country_clean$country, replace_names_BUIS)
-country_clean$country <- sapply(country_clean$country, replace_names_BROT)
-country_clean$country <- sapply(country_clean$country, replace_names_BOIS)
-country_clean$country <- sapply(country_clean$country, replace_names_CAIS)
-country_clean$country <- sapply(country_clean$country, replace_names_INDO)
-country_clean$country <- sapply(country_clean$country, replace_names_SRLA)
-country_clean$country <- sapply(country_clean$country, replace_names_JAPA)
-country_clean$country <- sapply(country_clean$country, replace_names_TAIW)
-country_clean$country <- sapply(country_clean$country, replace_names_CVIS)
-country_clean$country <- sapply(country_clean$country, replace_names_CORI)
-country_clean$country <- sapply(country_clean$country, replace_names_COLM)
-country_clean$country <- sapply(country_clean$country, replace_names_BURM)
-country_clean$country <- sapply(country_clean$country, replace_names_SOMA)
-country_clean$country <- sapply(country_clean$country, replace_names_BRUN)
-country_clean$country <- sapply(country_clean$country, replace_names_PORT)
-country_clean$country <- sapply(country_clean$country, replace_names_NORW)
-country_clean$country <- sapply(country_clean$country, replace_names_VIET)
-country_clean$country <- sapply(country_clean$country, replace_names_DRC)
-#okay this works - but this is not ideal - I will die before I could manually scan and loop over remaining 1316 entries
+)
+
+for (i in seq_along(replace_functions)) {
+  country_clean$country <- sapply(country_clean$country, replace_functions[[i]])
+}
 ```
 
 
-
-```{r}
-#to count whether unique entries reducing or not after each country name fix - manually run after each loop
+```{r, country count check after merge}
+#to count whether unique entries reducing or not. 
 country_counts_check <- country_clean %>%
   group_by(country) %>%
   summarise(count = n())
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ```{r warning=FALSE}
@@ -425,3 +488,5 @@ cleaned_df <- merge(cleaned_df, iso_to_standard_mapping, by.x = "StandardName", 
 colnames(cleaned_df)[colnames(cleaned_df) == "StandardName.y"] <- "country2"
 
 ```
+
+
