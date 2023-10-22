@@ -2,10 +2,87 @@
 title: "hw_04.Rmd"
 author: "Vinay K L"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Q1 Data Scrapping from the course webpage
+
+# Answer
+```{r, warning=FALSE}
+# Load the library
+library(rvest)
+library(dplyr)
+library(stringr)
+```
+
+```{r}
+# Get the data
+url <- read_html("https://introdatasci.dlilab.com/schedule_materials/")
+
+course_material <- url %>% 
+  html_elements(css = c("main")) %>%
+  html_table()
+
+course_material
+```
+
+-------------------------------------------
+
+## Q2 Add new 'day' and 'month' column
+
+## Answer
+```{r}
+# Convertning the table to dataframe
+course_material <- as.data.frame(course_material)
+
+# Before proceeding further let's remove last three lines which has 'Lectures not used' info
+course_material <- course_material[-(32:34), ]
+```
+
+```{r}
+# Adding two new column 'month' and 'day' using 'mutate' and 'regex' to extract and simulteneiosuly storing in new column
+course_material <- course_material %>%
+    mutate(
+         month = str_extract(Date, "^[A-Za-z]+"),
+         day = as.integer(str_extract(Date, "\\d+"))
+     )
+```
+
+----------------------------------------------------------
+
+## Q3 Group number of lectures by month and summarise them in high to low manner. 
+
+## Answer
+```{r}
+# Saving the results in a new df
+Q3_df <- course_material %>%
+     group_by(month) %>%
+     summarise(number_of_lectures = n()) %>%
+     arrange(desc(number_of_lectures))
+```
+
+--------------------------------------------------------
+
+## Q4 Split the 'Topic' column and find the most used word
+
+## Answer
+```{r}
+# First let's split and get all the words as a list
+words_list <- unlist(stringr::str_split(course_material$Topic, "\\s+"))
+
+# Let's count each words
+word_counts <- table(words_list)
+
+# Let's sort the counts in high to low
+top_words <- sort(word_counts, decreasing = TRUE)[1:5]
+
+# To check which are those top 5 words. 
+print(top_words)
 ```
 
