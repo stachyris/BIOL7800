@@ -2,10 +2,130 @@
 title: "hw_05.Rmd"
 author: "Vinay K L"
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+-------------------------------------------------
+## Q1 Create a new column named ``genus`` and print out random 100 rows
+
+## Answer
+```{r, load libraries}
+library(dplyr)
+library(neonDivData)
+```
+
+```{r}
+#attaching the data frame
+neonDivData::data_plant
+
+# saving the results on to a new data frame
+data_plant <- data_plant %>%
+  mutate(genus = sub("^\\s*([A-Za-z]+)\\s.*", "\\1", taxon_name))
+```
+
+```{r}
+set.seed(777) # setting the seed for reproducibility
+random_100_genus <- sample(unique(data_plant$genus), 100)
+print(random_100_genus)
+```
+
+-----------------------------------------------------------------------------------------------
+
+## Q2 Create a new column ``taxon_name2`` and split the ``taxon_name`` entries to only first two names
+
+## Answer
+
+```{r}
+#Since the data frame already exists - not calling again
+
+data_plant <- data_plant %>%
+  mutate(taxon_name2 = sub("^(\\S+\\s+\\S+).*", "\\1", taxon_name)) #basic regex to split the taxon_anmes
+```
+
+```{r}
+# To print out the random 100 values
+set.seed(777) # for reproducibility purpose
+randon_100_values <- sample(unique(data_plant$taxon_name2), 100)
+print(randon_100_values)
+```
+
+-----------------------------------------------------------------------------------------------
+
+## Q3 Calculating species richness in three different plot size and then using ``left_join`` to combine the ouputs. 
+
+```{r}
+# Splitting down the plots in to three groups named n_1, n_10, n_100
+
+# Richness for 1m^2 plots
+n_1 <- data_plant %>%
+  filter(sample_area_m2 == "1") %>%
+  group_by(siteID) %>%
+  summarize(richness_1m2 = n_distinct(taxon_name2))
+
+# Richness for 10m^2 plots
+n_10 <- data_plant %>%
+  filter(sample_area_m2 %in% c("1", "10")) %>%
+  group_by(siteID) %>%
+  summarize(richness_10m2 = n_distinct(taxon_name2))
+
+# Richness for 100m^2 plots
+n_100 <- data_plant %>%
+  filter(sample_area_m2 %in% c("1", "10", "100")) %>%
+  group_by(siteID) %>%
+  summarize(richness_100m2 = n_distinct(taxon_name2))
+
+```
+
+```{r}
+# JOining all the ``n_*`` data drames
+
+n_all <- n_1 %>%
+  left_join(n_10) %>%
+  left_join(n_100)
+```
+
+-----------------------------------------------------------------------------------------------
+
+## Q4 Transform n_all to long data format using pivot_longer
+
+## Answer
+```{r}
+library(tidyr) # loading tidyr
+```
+
+```{r}
+n_all_long <- n_all %>% # appednidng to new dataframe
+  pivot_longer(cols = starts_with("richness_"), # since richness has multiple names keeping just "richness_"
+               names_to = "spatial_scale",
+               values_to = "richness") %>%
+  select(siteID, spatial_scale, richness) # transforming into three columns. 
+```
+
+-----------------------------------------------------------------------------------------------
+
+## Q5 Creating plt using ggplot2
+
+## Answer
+
+```{r}
+library(ggplot2) #loading the library
+```
+
+```{r}
+# Question has spatial scale v/s richness graph. So selecting those column to plot
+ggplot(n_all_long, aes(x = spatial_scale, y = richness, group = siteID)) +
+  geom_line(aes()) +
+  geom_point(aes(), size = 3) +
+  labs(
+    x = "Spatial Scales",
+    y = "Richness"
+  )
+```
+
 
