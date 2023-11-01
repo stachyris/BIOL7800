@@ -4,6 +4,9 @@ author: "Vinay K L"
 date: "`r Sys.Date()`"
 output:
   pdf_document: default
+  latex_engine: xelatex
+  includes:
+      in_header: header.tex
   html_document: default
 ---
 
@@ -12,10 +15,12 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 -------------------------------------------------
+
 ## Q1 Create a new column named ``genus`` and print out random 100 rows
 
 ## Answer
-```{r, load libraries}
+
+```{r}
 library(dplyr)
 library(neonDivData)
 ```
@@ -23,7 +28,9 @@ library(neonDivData)
 ```{r}
 #attaching the data frame
 neonDivData::data_plant
+```
 
+```{r}
 # saving the results on to a new data frame
 data_plant <- data_plant %>%
   mutate(genus = sub("^\\s*([A-Za-z]+)\\s.*", "\\1", taxon_name))
