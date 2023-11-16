@@ -87,6 +87,7 @@ confint(linear_model) # Calculated by R
 ```
 
 -----------------------------------------------
+
 # d) Raw residuals.
 
 ```{r}
@@ -96,7 +97,9 @@ residuals <- residuals(linear_model)
 residuals
 
 ```
+
 -----------------------------------------------
+
 # e) Estimate of the error variance.
 
 ```{r}
@@ -109,6 +112,7 @@ error_variance <- sum(residuals^2) / (length(x) - 2)
 # Display the result
 error_variance
 ```
+
 ------------------------------
 
 # f) Expected yield of the rice variety
