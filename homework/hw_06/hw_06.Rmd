@@ -1,0 +1,242 @@
+---
+title: "hw_06.Rmd"
+author: "Vinay K L"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Q1
+
+Fit a linear model to the given data
+
+```{r}
+# Given data
+x = c(110.5, 105.4, 118.1, 104.5, 93.6, 84.1, 77.8, 75.6)
+y = c(5.755, 5.939, 6.010, 6.545, 6.730, 6.750, 6.899, 7.862)
+```
+
+```{r}
+# Given equation corresponds to basic linear regression model. 
+# To fit the model
+linear_model <- lm(y ~ x)
+
+# Checking the summary of the model results
+summary(linear_model)
+```
+
+------------------------------------------------
+
+# a) Least squares estimates of the slope. 
+
+```{r}
+# Extracting the coefficient for the slope
+slope_estimate <- coef(linear_model)[2]
+
+slope_estimate
+```
+Interpretation : For each additional unit increase in plant height, the estimated change in grain yield is approximately equal to (<span class="math inline">\(\hat{\beta_{1}}\)</span>) units. The sign of (<span class="math inline">\(\hat{\beta_{1}}\)</span>) indicates the direction of the relationship. If (<span class="math inline">\(\hat{\beta_{1}}\)</span>) is positive, it suggests a positive correlation, meaning higher plant heights are associated with higher grain yields. If (<span class="math inline">\(\hat{\beta_{1}}\)</span>) is negative, it suggests a negative correlation.
+
+--------------------------------------------------------------------
+
+# b) Perform F-test and then T-test. 
+
+```{r}
+# First let us do a F-test. F-test can be conducted by using the idea of ANOVA
+anova(linear_model)
+
+# Now we can check for T-test, Summary of the model-fitting will have the p-values which can be used to test the distribution of the null hypothesis. 
+summary(linear_model)
+
+```
+
+In both the cases, F-test and T-test, p value is less than 0.05 which provides evidence to reject the null hypothesis of <span class="math inline">\(H_{0}:\beta_{1}=0\)</span> . This suggests that there is a significant linear relationship between the predictor variable (plant height) and the response variable (grain yield). 
+
+---------------------------------------------------------
+
+# c) Construct a 95% CI by hand and compare to what R gives. 
+
+```{r}
+# ALpha value is given
+alpha <- 0.05
+n <- length(x)
+
+# Extracting the values from the summary of model fitting
+
+intercept_estimate <- coef(linear_model)[1]
+SE_intercept <- summary(linear_model)$coefficients[1, "Std. Error"]
+
+# Getting critical t value
+
+t_critical <- qt(alpha/2, n-2)
+
+# Calculting the intereval as upper and lower boundry
+lower_bound <- intercept_estimate - t_critical * SE_intercept
+upper_bound <- intercept_estimate + t_critical * SE_intercept
+
+
+# Displaying the results
+lower_bound # Calculated by hand
+upper_bound # Calcualted by hand
+
+confint(linear_model) # Calculated by R
+
+```
+
+-----------------------------------------------
+# d) Raw residuals.
+
+```{r}
+# Raw residuals can be extracted from the model summary
+residuals <- residuals(linear_model)
+
+residuals
+
+```
+-----------------------------------------------
+# e) Estimate of the error variance.
+
+```{r}
+# The estimate of the error variance is obtained as the mean squared residual from the regression model.
+
+# We can obrain the same in R with following code
+# Calculate the estimate of the error variance
+error_variance <- sum(residuals^2) / (length(x) - 2)
+
+# Display the result
+error_variance
+```
+------------------------------
+
+# f) Expected yield of the rice variety
+
+```{r}
+# Given values
+x_0 <- 100
+alpha <- 0.05
+
+# Calculate the expected yield 
+expected_yield <- coef(linear_model)[1] + coef(linear_model)[2] * x_0
+
+# Calculate the standard error of the predicted values
+SE_expected_yield <- sqrt(error_variance * (1/n + (x_0 - mean(x))^2 / sum((x - mean(x))^2)))
+
+# Calculate the critical t-value
+t_critical <- qt(alpha/2, length(x) - 2)
+
+# Calculate the confidence interval
+lower_bound <- expected_yield - t_critical * SE_expected_yield
+upper_bound <- expected_yield + t_critical * SE_expected_yield
+
+# Display the results
+expected_yield
+lower_bound
+upper_bound
+
+```
+
+------------------------------------------
+
+# g) Prediction of the yield of new rice variety
+
+```{r}
+# Calculate the standard error of the prediction
+SE_prediction <- sqrt(error_variance * (1 + 1/n + (x_0 - mean(x))^2 / sum((x - mean(x))^2)))
+
+# Calculate the prediction interval
+lower_bound_prediction <- expected_yield - t_critical * SE_prediction
+upper_bound_prediction <- expected_yield + t_critical * SE_prediction
+
+# Display the results
+lower_bound_prediction
+upper_bound_prediction
+
+```
+Comparing the results from f, new variety of rice has a wider 95% prediction interval. 
+
+-------------------------------------------------
+
+# h) Compute R2 and interpret the results
+
+```{r}
+R_squared <- summary(linear_model)$r.squared
+
+R_squared
+```
+Interpretation : A higher r square suggests that the linear regression model does a good job of explaining the variability in grain yield based on plant height.
+
+================================================================
+
+## Q2 
+
+## Answers
+
+```{r}
+# Given artificial data
+x <- c(1, 2, 3, 4, 5, 6, 7, 8, 9)
+y <- c(-2.08, -0.72, 0.28, 0.92, 1.20, 1.12, 0.68, -0.12, -1.28)
+
+# Fitting a linear model
+linear_model <- lm(y ~ x)
+
+summary(linear_model)
+```
+
+# a) Plot y vs x
+
+```{r}
+plot(y, x, main = "Scatterplot of y vs. x", xlab = "x", ylab = "y")
+```
+
+-------------------------------------------------------------
+
+# b) Plot the raw residuals vs. y
+
+```{r}
+raw_residuals <- residuals(linear_model)
+
+plot(y, raw_residuals, main = "Residuals vs. y", xlab = "y", ylab = "Residuals")
+abline(h = 0, col = "blue", lty = 2)
+
+```
+
+------------------------------------------------------
+
+# c) Plot raw residuals vs x
+
+```{r}
+# Plot residuals against x
+plot(x, raw_residuals, main = "Residuals vs. x", xlab = "x", ylab = "Residuals")
+abline(h = 0, col = "red", lty = 2)
+
+```
+
+------------------------------------------
+
+# d) plot raw residuals vs y^
+
+```{r}
+predicted_values <- predict(linear_model)
+
+plot(predicted_values, raw_residuals, main = "Residuals vs. Predicted Values", xlab = "Predicted Values (y^)", ylab = "Residuals")
+abline(h = 0, col = "cyan", lty = 2)
+```
+
+------------------------------------------------
+
+# e) Which explains the better model fit?
+
+While (b) and (c) provide valuable information, (d) Residuals vs. y^ gives a better indication of the lack of fit as it directly assesses the performance of the model in predicting the response variable ``y``. If there is a pattern or trend in (d), it suggests that the linear model might not be appropriate for capturing the underlying relationship in the data.
+
+
+
+
+
+
+
+
+
+
