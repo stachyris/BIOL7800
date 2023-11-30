@@ -1,0 +1,23 @@
+---
+title: "hw_07"
+author: "Vinay K L"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# R package
+
+=====================================================================
+
+My R package name is ``SimpleToolsR`` and it can be installed using
+
+``remotes::install_github(“stachyris/SimpleToolsR”)`` 
+
+====================================================================
