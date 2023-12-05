@@ -1,79 +1,38 @@
----
-title: "02_basic_visuals.Rmd"
-author: "Vinay K L"
-date: "2023-10-07"
-output: pdf_document
-latex_engine: xelatex
-  includes:
-      in_header: header.tex
----
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-
-```{r, warning=FALSE}
 library(sf)
 library(ggplot2)
 library(dplyr)
 library(ggthemes)
 library(cowplot)
 library(rnaturalearth)
-```
-
 # load cleaned data as df
-```{r}
-df <- read.csv("/data/cleaned_vertnet.csv")
-```
+df <- read.csv("data/cleaned_vertnet.csv")
 
-```{r}
-source('~/ggplot_theme_Publication/ggplot_theme_Publication-2.R')
-```
-
-## Visualise the data across years as bins of 5 years
-```{r}
-p <- ggplot(na.omit(df), aes(x = as.factor(YearBin))) +
+ggplot(na.omit(df), aes(x = as.factor(YearBin))) +
   geom_bar(fill = "#11A797") +
   labs(x = "Year of Collection", y = "No of Specimens") +
   ggtitle("Collection distribution across years") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5))
 
-ggsave("Figure 1.jpg", plot = p, width = 10, height = 7, units = "in")
-```
-
-## Visualise the data based on the country of collections
-
-```{r}
 count_data <- df %>%
-  filter(!is.na(countrycode)) %>%  # Remove rows where countrycode is NA
   group_by(countrycode) %>%
-  summarise(Count = n(), .groups = "drop")
-```
+  summarise(Count = n())
 
-```{r}
 df$decimallatitude <- as.numeric(df$decimallatitude)
 df$decimallongitude <- as.numeric(df$decimallongitude)
-```
 
-----------------------------------------------------------
-
-```{r}
-world <- ne_countries(scale = "medium", returnclass = "sf", type = "countries")
+world <- ne_countries(scale = 110, returnclass = "sf", type = "countries")
 
 merged_map_data <- merge(world, count_data, by.x = "iso_a3", by.y = "countrycode", all.x = TRUE)
 
-ggplot() +
+p2 <- ggplot() +
   geom_sf(data = merged_map_data, color = "black", fill = "lightgray") +
   geom_sf(data = merged_map_data, aes(fill = Count), color = NA) +
   scale_fill_gradient(low = "#F6EEAB", high = "#FF2400", na.value = "lightgray", guide = "legend")+
   theme_minimal()
-#ggsave("Figure 2.jpg", plot = p2, width = 10, height = 7, units = "in")
 
-```
 
-```{r}
 order_counts <- df %>%
   group_by(order) %>%
   summarise(count = n())
@@ -81,7 +40,7 @@ order_counts <- df %>%
 family_counts <- df %>%
   group_by(family) %>%
   summarise(count = n())
-```
+
 
 
 

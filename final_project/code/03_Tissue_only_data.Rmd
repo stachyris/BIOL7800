@@ -1,0 +1,76 @@
+---
+title: "03_Tissue_only_data.Rmd"
+author: "Vinay K L"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+tissue_df <- df[df$hastissue == 1, ]
+```
+
+```{r}
+#count_data_tissue <- tissue_df %>%
+  #group_by(countrycode) %>%
+  #summarise(Count = n())
+```
+
+
+```{r}
+count_data_tissue2 <- tissue_df %>%
+  filter(!is.na(countrycode)) %>%  # Remove rows where countrycode is NA
+  group_by(countrycode) %>%
+  summarise(Count = n(), .groups = "drop")
+```
+
+```{r}
+ggplot(na.omit(tissue_df), aes(x = as.factor(YearBin))) +
+  geom_bar(fill = "#11A797") +
+  labs(x = "Year of Collection", y = "No of Specimens") +
+  ggtitle("Only tissue collection distribution across years") +
+  theme_minimal() +
+  #cale_colour_Publication() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5))
+
+
+#ggsave("only_tissue_years.jpg", plot = tp, width = 10, height = 8, units = "in")
+
+```
+
+
+```{r}
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+merged_map_data_tissue <- merge(world, count_data_tissue2, by.x = "iso_a3", by.y = "countrycode", all.x = TRUE)
+
+ggplot(na.omit(tissue_df)) +
+  geom_sf(data = merged_map_data_tissue, color = "black", fill = "white") +
+  geom_sf(data = merged_map_data_tissue, aes(fill = Count), color = NA) +
+  scale_fill_gradient(low = "#F6EEAB", high = "#FF2400", na.value = "white", guide = "legend", trans = "log") +
+  theme_minimal()
+
+#ggsave("only_tissue.jpg", plot = P, dpi = 300)
+
+
+
+
+```
+
+
+```{r}
+order_counts_tissue <- tissue_df %>%
+  group_by(order) %>%
+  summarise(count = n())
+
+family_counts_tissue <- tissue_df %>%
+  group_by(family) %>%
+  summarise(count = n())
+```
+
+
+
+

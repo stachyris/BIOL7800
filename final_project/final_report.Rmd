@@ -1,0 +1,330 @@
+---
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  pdf_document: default
+  html_document: default
+link-citations: yes
+bibliography: [references_final.bib, packages.bib]
+indent: true
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+```{r, include=FALSE}
+knitr::write_bib(c(.packages(), "ggplot2", "dplyr", "ggthemes", "stringr"), "packages.bib")
+```
+
+# Mapping the Void: An In-depth Analysis of the VertNet Database to Unearth Global Gaps in Avian Specimen and Tissue Collections
+
+```{=tex}
+\begin{center}
+Vinay K. L.
+\end{center}
+```
+
+## **Introduction**
+
+Museums and natural history collections are important and invaluable sources of Earth history's biodiversity information. Often spanning centuries, museum collections represent a treasure trove of
+biological specimens and data. The specimens in natural history
+collections serve as the basis for numerous basic science and
+research fields. Natural history collections also contain deep, taxon-specific
+information derived from global populations of plants, animals, fungi,
+and microorganisms. [@hope2018collection; @johnson2011climate;
+@card2021museum] By evaluating how species evolve, museum
+specimens offer crucial baseline data for studies of conservation and
+emerging diseases (such as
+[Hantavirus](https://msb.unm.edu/divisions/mammals/research/projects/hantavirus.html)
+and West Nile Virus). The importance of museum collections lies in their
+ability to serve as both a historical record of life on our planet and a
+contemporary resource for scientific inquiry.
+
+What initially began as cabinets filled with mounted specimens has
+transformed into vast, digitized repositories. With the advent of modern
+databases and digitization efforts, these collections are now more
+accessible and interconnected than ever. VertNet is one such effort to
+combine museum collection records from over 250 natural history
+collections. [@constable2010vertnet] VertNet, a comprehensive repository
+of biodiversity data, serves as an invaluable resource for assessing the
+state of biodiversity worldwide. Exploiting VertNet's expansive
+dataset facilitates a profound comprehension of the immense
+diversity encompassed within avian taxa and provides the tools to
+identify significant gaps in our intellectual understanding. By meticulously 
+analyzing this wealth of information, we can discern
+regions characterized by a need for avian tissue collections. These taxonomic
+groups remain underrepresented in scientific investigations and
+temporal gaps. These conclusions play a crucial part in determining how
+future specimen collection initiatives will proceed. With this background, 
+we set out to understand a) Where are the significant data gaps regarding specimen 
+collection and tissue samples? 2) Which are the over and under-represented 
+groups/families of birds in the museum collection. 
+
+## **Methods**
+The compilation of museum collection data was executed through two distinct 
+methodologies. Firstly, data acquisition transpired through direct downloads 
+from the [VertNet website](https://datacommons.cyverse.org/browse/iplant/home/shared/commons_repo/curated/Vertnet_Aves_Sep2016) and leveraged the rvertnet package,[@rvertnet] explicitly 
+employing the 'bigsearch' option. Post retrieval, a meticulous sequence of data 
+refinement procedures was implemented. The initial step involved merging  
+two datasets, retaining only singular, distinct records. Notably, the VertNet 
+dataset incorporated a spectrum of entries, including fossil specimens, eggs, 
+and nest records, which were systematically removed from the dataset. Scrutiny 
+of the unique country records exposed over 1100 entries, underscoring multiple 
+nomenclatures for identical countries. Consequently, a consolidation process 
+is employed, integrating countries and appending iso3c country codes by utilizing the countrycode package.[@countrycode] Subsequently, collection years were 
+binned into 5-year intervals. 
+
+Furthermore, a comprehensive data cleansing regimen was implemented to eliminate
+any instances of missing genus and species names. Subsequently, orders and 
+families underwent systematic refinement to standardize records in accordance 
+with the IOC taxonomy.[@IOC_World_Bird_List] Upon completion of requisite columnar cleansing, the 
+refined dataset was exported in CSV format, exclusively retaining selected 
+columns for subsequent analytical procedures. 
+
+The refined dataset later served as the foundational substrate for visualizing 
+specimen and tissue collections spatially and temporally. The rnaturalearth 
+package [@rnaturalearth] facilitated the importation of world map data, 
+enabling the visualization of bird specimens and tissue collections across 
+various collection years. 
+Following the visualization process, a meticulous analysis ensued, wherein 
+standardized residuals were calculated to find the significantly underrepresented 
+and/or overrepresented groups of birds among order and family of birds. 
+This methodological cascade underscores the rigor and precision 
+applied to both the preprocessing and analytical phases of the investigation, 
+enhancing the scholarly integrity and relevance of the ensuing findings. 
+
+```{r, include=FALSE}
+# This step import, cleans (Multi level) and exports the cleaned data set. 
+#source("code/01_clean_data.R", local = knitr::knit_global())
+```
+
+
+```{r, include=FALSE}
+df <- read.csv("data/cleaned_vertnet.csv")
+```
+
+## **Results**
+
+The merging of two datasets culminated in a dataset comprising 1.508 million 
+raw records of museum collections. Following meticulous data cleansing procedures, 
+the resultant dataset retained approximately 1.18 million records, with approximately 
+138,000 featuring tissue records. As illustrated in Figure 1, museum collections 
+commencing from 1690 and extending to 2015, the collection data exhibits a notable 
+acceleration from 1870 onwards, reaching its peak between 1928 and 1932 with an 
+approximate tally of 23,000 specimens globally. 
+
+```{r, fig.cap="Avian Specimen collection in museums across years binned to 5 years winddow"}
+library(ggplot2)
+library(ggthemes)
+df <- read.csv("data/cleaned_vertnet.csv")
+
+ggplot(na.omit(df), aes(x = as.factor(YearBin))) +
+  geom_bar(fill = "#11A797") +
+  labs(x = "Year of Collection", y = "No of Specimens") +
+  ggtitle("Temporal distribution of avian specimen collection") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5))
+#ggsave("figs/Figure_1.jpg", plot = F1, width = 10, height = 7, units = "in")
+```
+
+Among the 237 countries catalogued, records are distributed across 190 nations, 
+with conspicuous concentrations in the United States of America, as depicted in 
+Figure 2. In contrast, the central region of Africa emerges as an undersampled 
+center devoid of recorded specimens. The taxonomic exploration of class Aves, 
+delineated by the IOC Bird taxonomy, elucidates a taxonomy comprising 41 orders 
+and 255 families. The collection records, spanning 40 orders and 
+232 families underscore a comprehensive representation of avian biodiversity. 
+
+```{r, fig.cap="Spatial distribution of the avian specimen collections across globe. Red indicates high and yellow indicates low numbers whereas light grey shows the absence of specimen in logarithmic scale"}
+library(ggthemes)
+library(cowplot)
+library(rnaturalearth)
+library(dplyr)
+
+
+count_data <- df %>%
+  filter(!is.na(countrycode)) %>%  # Remove rows where countrycode is NA
+  group_by(countrycode) %>%
+  summarise(Count = n(), .groups = "drop")
+
+world <- ne_countries(scale = "medium", returnclass = "sf", type = "countries")
+
+merged_map_data <- merge(world, count_data, by.x = "iso_a3", by.y = "countrycode", all.x = TRUE)
+
+ggplot() +
+  geom_sf(data = merged_map_data, color = "black", fill = "lightgray") +
+  geom_sf(data = merged_map_data, aes(fill = Count), color = NA) +
+  scale_fill_gradient(low = "#F6EEAB", high = "#FF2400", na.value = "lightgray", guide = "legend", trans = "log")+
+  ggtitle("Spatial distribution of avian specimen collection") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+#ggsave("figs/Figure_2.jpg", plot = F2, width = 10, height = 7, units = "in")
+
+```
+
+Coming to the tissue collection, a pronounced surge in "modern" tissue collection is discernible from the late 1970s, as depicted in Figure 3. 
+
+```{r, fig.cap="Avian tissue only collection in museums across years binned to 5 years winddow"}
+library(ggplot2)
+
+tissue_df <- df[df$hastissue == 1, ]
+
+ggplot(na.omit(tissue_df), aes(x = as.factor(YearBin))) +
+  geom_bar(fill = "#11A797") +
+  labs(x = "Year of Collection", y = "No of Specimens") +
+  ggtitle("Temporal distribution of tissue collection") +
+  theme_minimal() +
+  #cale_colour_Publication() +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5))
+#ggsave("figs/Figure_3.jpg", plot = F3, width = 10, height = 7, units = "in")
+
+```
+
+The United States of America assumes a prominent role in tissue collection, 
+contributing slightly over 60,000 specimens. In contrast to the broader specimen
+collections, tissue collection encompasses only 145 countries, revealing a 
+pronounced void in global representation. The taxonomic spectrum of tissue 
+collection spans 37 orders and 197 families of avian taxa, accentuating the 
+specificity and selectivity inherent in this facet of scientific 
+exploration.  
+
+```{r, fig.cap="Spatial distribution of the avian tissue collections across globe. Red indicates high and yellow indicates low numbers whereas light grey shows the absence of specimen in logarithmic scale"}
+library(ggplot2)
+
+count_data_tissue2 <- tissue_df %>%
+  filter(!is.na(countrycode)) %>%  # Remove rows where countrycode is NA
+  group_by(countrycode) %>%
+  summarise(Count = n(), .groups = "drop")
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+merged_map_data_tissue <- merge(world, count_data_tissue2, by.x = "iso_a3", by.y = "countrycode", all.x = TRUE)
+
+ggplot(na.omit(tissue_df)) +
+  geom_sf(data = merged_map_data_tissue, color = "black", fill = "lightgray") +
+  geom_sf(data = merged_map_data_tissue, aes(fill = Count), color = NA) +
+  scale_fill_gradient(low = "#F6EEAB", high = "#FF2400", na.value = "lightgray", guide = "legend", trans = "log") +
+  ggtitle("Spatial distribution of tissue collection") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# ggsave("figs/Figure_4.jpg", plot = F4, width = 10, height = 7, units = "in")
+
+```
+
+```{r, fig.pos='H', fig.cap="Standardized Residuals - Orders. Chi-sqaure test p-value < 2.2e-16. Positive value indicates the overrepresentation and vice versa", include=TRUE}
+# This is performing the Chi-square test. 
+order_table <- table(df$order) # creating a table
+order_chi_square <- chisq.test(order_table) # performing chi-square test
+
+order_residuals <- resid(order_chi_square) # running residuals to check the representation
+
+par(mar = c(9, 6, 4, 2) + 0.1)
+barplot(order_residuals, names.arg = levels(df$Order), main = "Standardized Residuals - Orders",col = "#11A797", las = 2) # plotting the results
+```
+
+```{r, fig.pos='H', fig.cap="Standardized Residuals - Families. Chi-sqaure test p-value < 2.2e-16. Positive value indicates the overrepresentation and vice versa", include=TRUE}
+family_table <- table(df$family) # creating a table
+family_chi_square <- chisq.test(family_table) # perfomning Chi-square test
+ # checking the results. 
+
+family_residuals <- resid(family_chi_square) # running resuduals to check the represntation. 
+ # checking the results
+
+par(mar = c(9, 6, 4, 2) + 0.1)
+barplot(family_residuals, names.arg = levels(df$family), main = "Standardized Residuals - Families", col = "#11A797", las = 2) # plotting the results. 
+```
+
+Figure 5 and Figure 6 show the Standardized residuals of the Chi-square test 
+for order and families of class aves, respectively. 
+
+## **Discussion**
+
+The temporal analysis of the dataset revealed intriguing patterns in collection 
+dynamics over the last three centuries, with a significant acceleration post-1870s. 
+This period corresponds to heightened global exploration and scientific expeditions,
+emphasizing the historical context that shaped museum collections.[@bakker2020global] 
+The distribution of records across 190 nations underscores the global reach of these
+collections, with concentrations in the United States and notable undersampling in 
+central Africa. These patterns prompt consideration of historical, geopolitical, 
+and ecological factors influencing collection efforts, offering a nuanced 
+perspective on the evolution of biodiversity documentation.[@bakker2020global] 
+
+Zooming into the taxonomic exploration of class Aves, the study reveals a 
+comprehensive representation of avian biodiversity across 41 orders and 255 families. 
+This rich taxonomic spectrum underscores the importance of museum collections in 
+providing a detailed understanding of the diversity within avian taxa. However, 
+the analysis also highlights gaps and biases in the representation of certain 
+orders and families, raising questions about the factors influencing collection
+priorities. A few potential reasons for the underrepresentation of certain 
+taxa could be habitat inaccessibility, research focus, conservation status and 
+religious believes as explained in Bakker et al., 2020 [@bakker2020global].
+This exploration of taxonomic nuances enhances the depth of understanding 
+regarding the completeness and comprehensiveness of the available avian specimen 
+collections.  
+
+Transitioning to tissue collections, the results shed light on the delayed 
+inception in the 19th century due to challenges in reliable tissue preservation 
+methods. The pronounced surge in "modern" tissue collection from the late 1970s, 
+particularly in the United States, points towards technological advancements and 
+shifting scientific paradigms. This shift's implications impact molecular research, 
+genetic studies, and the understanding of diseases affecting avian populations.[@bi2013unlocking; @besnard2014museums] 
+The global void in tissue representation, encompassing only 145 countries, 
+raises questions about accessibility, infrastructure, and collaborative efforts 
+in scientific research. Data shows a considerable amount of tissue repository 
+pre-1950s, which is unlikely given that there were no reliable methods to preserve 
+the tissue samples.[@seutin1991preservation] Hence, the records could be either 
+due to human error or toe pad clippings cut much later in the collection 
+assigned as a tissue. Thus, this opens the scope of the global landscape of 
+scientific exploration, emphasizing the need for inclusivity and equity in the 
+representation of biological diversity in tissue collections. 
+
+In a broader context, this study contributes to the ongoing dialogue on the 
+significance of museum collections as invaluable reservoirs of biodiversity 
+information. It reinforces the dual role of collections as historical records 
+and contemporary scientific resources, urging continued support for the digitization 
+and accessibility initiatives that enhance the utility of museums. These findings 
+call attention to the importance of targeted specimen and tissue collection 
+initiatives to fill gaps in representation, fostering a more holistic understanding 
+of avian specimen collections. Ultimately, this study could catalyze future 
+discussions and actions to advance the integrity and relevance of natural history 
+collections in the face of evolving scientific landscapes and global challenges. 
+
+## **Caveats** 
+
+As with any scientific study, this study is subject to certain constraints and 
+may only comprehensively address some pertinent questions. The reliance on a 
+publicly available database, limited to data until 2015, is acknowledged as a 
+potential limitation. Subsequent to this period, concerted efforts have been made 
+to enhance the comprehensiveness of global collection databases. A notable 
+proportion of records originate from the pre-colonial era, introducing a potential 
+source of imprecision in determining the precise specimen collection locations. 
+Furthermore, the dynamic nature of the Tree of Life taxonomy is recognized, with 
+ongoing updates and revisions. It is important to note that the lower-level 
+taxonomy employed in this study needed to be standardized, introducing a potential 
+source of bias in the results. Thus, the inferences drawn from this study should 
+be exercised cautiously, considering these inherent limitations. 
+
+## **Acknowledgments**
+
+I thank Dr Brant Faircloth for helping me conceptualise the project and discuss 
+the results. I would also like to thank Naman Goyal, Eamon Corbett and 
+Oluwaseun Akinsulire for the meaningful discussion. I thank Dr Dijing Li for the 
+opportunity to conduct this study as a part of class project. 
+
+## **Appendix**
+
+Other R packages used in the study are listed below
+tidyverse[@tidyverse], dplyr[@dplyr], lubridate[@lubridate], stringr[@stringr], 
+readr[@readr], rvest[@rvest], sf[@sf], ggplot2[@ggplot2], ggthemes[@ggthemes],
+cowplot[@cowplot]
+
+## **References**
+
+
+
