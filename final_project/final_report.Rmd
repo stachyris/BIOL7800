@@ -314,7 +314,7 @@ be exercised cautiously, considering these inherent limitations.
 
 I thank Dr Brant Faircloth for helping me conceptualise the project and discuss 
 the results. I would also like to thank Naman Goyal, Eamon Corbett and 
-Oluwaseun Akinsulire for the meaningful discussion. I thank Dr Dijing Li for the 
+Oluwaseun Akinsulire for the meaningful discussion. I thank Dr Daijiang Li for the 
 opportunity to conduct this study as a part of class project. 
 
 ## **Appendix**
