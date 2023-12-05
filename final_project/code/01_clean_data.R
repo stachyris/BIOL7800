@@ -1171,7 +1171,16 @@ columns_to_retain <- c("continent", "country", "countrycode", "decimallatitude",
 
 vert_clean_df <- cleaned_df[columns_to_retain]
 
-write.csv(vert_clean_df,"data/cleaned_vertnet.csv", row.names = FALSE, overwrite=TRUE)
+file_path <- "data/cleaned_vertnet.csv"
+
+# Check if the file exists
+if (file.exists(file_path)) {
+  # Remove the existing file
+  file.remove(file_path)
+}
+
+# Write the new CSV file
+write.csv(vert_clean_df, file_path, row.names = FALSE)
 
 
 

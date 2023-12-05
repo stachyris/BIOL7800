@@ -98,7 +98,7 @@ enhancing the scholarly integrity and relevance of the ensuing findings.
 
 ```{r, include=FALSE}
 # This step import, cleans (Multi level) and exports the cleaned data set. 
-#source("code/01_clean_data.R", local = knitr::knit_global())
+source("code/01_clean_data.R", local = knitr::knit_global())
 ```
 
 
